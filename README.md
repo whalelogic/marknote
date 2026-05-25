@@ -3,6 +3,9 @@
 
 This web server serves all markdown files in the repository in a clean, browsable format.
 
+<img width="1329" height="831" alt="image" src="https://github.com/user-attachments/assets/2120ed67-7ffc-477a-8910-f9eb8276edda" />
+
+
 #### Why?
 
 - 🗂️ Easily view and navigate your notes without leaving the browser
