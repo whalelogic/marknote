@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <section class="hero is-primary is-small">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fa-solid fa-bullseye" style="color: #de1f52;"></i></span>
+                        <span> Mark Note</span>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <aside class="menu sidebar-wrapper">
+                        {{$currentCategory := ""}}
+                        {{range .Files}}
+                            {{if ne .Category $currentCategory}}
+                                {{if ne $currentCategory ""}}</ul></details>{{end}}
+                                {{$currentCategory = .Category}}
+                                <details class="category-folder">
+                                    <summary class="menu-label">
+                                        <span class="folder-toggle">+</span>
+                                        <span class="folder-name">{{$currentCategory}} <span class="category-count">({{index $.CategoryCounts $currentCategory}})</span></span>
+                                    </summary>
+                                    <ul class="menu-list">
+                            {{end}}
+                            <li><a href="/view/{{.Path}}">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-lightbulb icon-yellow-sharp"></i></span>
+                                    <span>{{.Name}}</span>
+                                </span>
+                            </a></li>
+                        {{end}}
+                        {{if ne $currentCategory ""}}</ul></details>{{end}}
+                    </aside>
+                </div>
+                
+                <div class="column">
+                    <div class="box">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <h2 class="subtitle is-5">
+                                        <strong>{{len .Files}}</strong> Documents found
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <table class="table is-fullwidth is-hoverable">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Category</th>
+                                    <th class="has-text-right">Path</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Files}}
+                                <tr>
+                                    <td>
+                                        <a href="/view/{{.Path}}" class="has-text-weight-semibold">
+                                            {{.Name}}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{if ne .Category "General"}}
+                                            <span class="tag is-info is-light">{{.Category}}</span>
+                                        {{else}}
+                                            <span class="tag is-light">General</span>
+                                        {{end}}
+                                    </td>
+                                    <td class="has-text-right">
+                                        <code>{{.Path}}</code>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        // Persist category open/close state
+        document.addEventListener('DOMContentLoaded', function() {
+            const folders = document.querySelectorAll('details.category-folder');
+            
+            // Restore state from localStorage
+            folders.forEach(folder => {
+                const summary = folder.querySelector('.folder-name');
+                const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
+                const savedState = localStorage.getItem('category-' + categoryName);
+                
+                if (savedState === 'open') {
+                    folder.setAttribute('open', '');
+                }
+            });
+            
+            // Save state on toggle
+            folders.forEach(folder => {
+                folder.addEventListener('toggle', function() {
+                    const summary = folder.querySelector('.folder-name');
+                    const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
+                    
+                    if (folder.open) {
+                        localStorage.setItem('category-' + categoryName, 'open');
+                    } else {
+                        localStorage.removeItem('category-' + categoryName);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
