@@ -117,6 +117,26 @@ details.category-folder[open] .category-icon i {
     border-radius: 6px;
     transition: background-color 0.2s ease, color 0.2s ease;
     border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+}
+
+.menu-list a .icon-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.menu-list a .icon-text .icon {
+    flex-shrink: 0;
+}
+
+.menu-list a .icon-text > span:not(.icon) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
