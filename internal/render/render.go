@@ -9,7 +9,6 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-// MarkdownToHTML converts markdown content to HTML with Mermaid support
 func MarkdownToHTML(md []byte) []byte {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
