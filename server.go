@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/whalelogic/marknote/internal/render"
 )
@@ -19,12 +20,19 @@ type MarkdownFile struct {
 	Category string
 }
 
+type SearchResult struct {
+	File    MarkdownFile
+	Snippet string
+}
+
 type PageData struct {
 	Title          string
 	Content        template.HTML
 	Files          []MarkdownFile
 	CurrentPath    string
 	CategoryCounts map[string]int
+	SearchQuery    string
+	SearchResults  []SearchResult
 }
 
 var notesRoot string
@@ -65,10 +73,14 @@ func main() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	files := getAllMarkdownFiles()
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
+
 	data := PageData{
 		Title:          "Markdown Documentation Platform",
 		Files:          files,
 		CategoryCounts: getCategoryCounts(files),
+		SearchQuery:    query,
+		SearchResults:  searchMarkdownFiles(files, query),
 	}
 	templates.ExecuteTemplate(w, "index.html", data)
 }
@@ -103,6 +115,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		Files:          files,
 		CurrentPath:    cleanedPath,
 		CategoryCounts: getCategoryCounts(files),
+		SearchQuery:    strings.TrimSpace(r.URL.Query().Get("q")),
 	}
 
 	templates.ExecuteTemplate(w, "view.html", data)
@@ -176,4 +189,97 @@ func getCategoryCounts(files []MarkdownFile) map[string]int {
 		counts[file.Category]++
 	}
 	return counts
+}
+
+func searchMarkdownFiles(files []MarkdownFile, query string) []SearchResult {
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil
+	}
+
+	lowerQuery := strings.ToLower(query)
+	results := make([]SearchResult, 0)
+
+	for _, file := range files {
+		fullPath := filepath.Join(notesRoot, file.Path)
+		content, err := os.ReadFile(fullPath)
+		if err != nil {
+			continue
+		}
+
+		nameMatch := strings.Contains(strings.ToLower(file.Name), lowerQuery)
+		pathMatch := strings.Contains(strings.ToLower(file.Path), lowerQuery)
+		contentText := string(content)
+		contentMatch := strings.Contains(strings.ToLower(contentText), lowerQuery)
+
+		if !nameMatch && !pathMatch && !contentMatch {
+			continue
+		}
+
+		results = append(results, SearchResult{
+			File:    file,
+			Snippet: buildSearchSnippet(contentText, lowerQuery),
+		})
+	}
+
+	return results
+}
+
+func buildSearchSnippet(content, lowerQuery string) string {
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		if strings.Contains(strings.ToLower(trimmed), lowerQuery) {
+			return shortenMatch(trimmed, lowerQuery, 160)
+		}
+	}
+
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" {
+			return shortenMatch(trimmed, "", 160)
+		}
+	}
+
+	return "No preview available."
+}
+
+func shortenMatch(text, lowerQuery string, maxLen int) string {
+	runes := []rune(text)
+	if len(runes) <= maxLen {
+		return text
+	}
+
+	if lowerQuery == "" {
+		return string(runes[:maxLen-1]) + "…"
+	}
+
+	lowerText := strings.ToLower(text)
+	matchByteIndex := strings.Index(lowerText, lowerQuery)
+	if matchByteIndex < 0 {
+		return string(runes[:maxLen-1]) + "…"
+	}
+	matchIndex := utf8.RuneCountInString(lowerText[:matchByteIndex])
+
+	start := matchIndex - (maxLen / 3)
+	if start < 0 {
+		start = 0
+	}
+
+	end := start + maxLen
+	if end > len(runes) {
+		end = len(runes)
+		start = max(0, end-maxLen)
+	}
+
+	snippet := string(runes[start:end])
+	if start > 0 {
+		snippet = "…" + snippet
+	}
+	if end < len(runes) {
+		snippet += "…"
+	}
+	return snippet
 }

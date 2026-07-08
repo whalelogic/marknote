@@ -1,3 +1,4 @@
+::: content
 # Rust Ownership {#rust-ownership .title}
 
 Ownership is Rust\'s most unique feature and has deep implications for

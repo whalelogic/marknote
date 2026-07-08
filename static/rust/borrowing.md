@@ -1,3 +1,4 @@
+::: content
 # Rust Borrowing {#rust-borrowing .title}
 
 Borrowing allows you to have references to a value without taking

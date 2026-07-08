@@ -13,15 +13,34 @@
     <section class="hero is-primary is-small">
         <div class="hero-body">
             <div class="container">
-                <h1 class="title">
-                    <span class="icon-text">
-                        <a href="/" class="home-link">
-                            <span class="icon"><i class="fa-solid fa-bullseye" style="color: #de1f52;"></i></span>
-                            <span>Mark Note</span>
-                        </a>
-                        <span><i class="fa-solid fa-chevron-right" style="color: rgb(99, 230, 190);"></i> {{.Title}}</span>
-                    </span>
-                </h1>
+                <div class="hero-bar">
+                    <h1 class="title">
+                        <span class="icon-text">
+                            <a href="/" class="home-link">
+                                <span class="icon"><i class="fa-solid fa-bullseye" style="color: #de1f52;"></i></span>
+                                <span>Go Mark</span>
+                            </a>
+                            <span><i class="fa-duotone fa-solid fa-angles-right" style="--fa-primary-color: rgb(99, 230, 190); --fa-secondary-color: rgb(99, 230, 190);"></i> {{.Title}}</span>
+                        </span>
+                    </h1>
+                    <form action="/" method="get" class="navbar-search">
+                        <div class="field has-addons navbar-search-field">
+                            <div class="control has-icons-left is-expanded">
+                                <input
+                                    class="input"
+                                    type="search"
+                                    name="q"
+                                    value="{{.SearchQuery}}"
+                                    placeholder="Search all files"
+                                >
+                                <span class="icon is-small is-left"><i class="fas fa-search"></i></span>
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-light">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
@@ -55,15 +74,17 @@
                                 {{$currentCategory = .Category}}
                                 <details class="category-folder" {{if eq $currentCategory $activeCategory}}open{{end}}>
                                     <summary class="menu-label">
-                                        <span class="folder-toggle">+</span>
-                                        <span class="folder-name">{{$currentCategory}} <span class="category-count">({{index $.CategoryCounts $currentCategory}})</span></span>
+                                        <span class="folder-chevron"><i class="fas fa-chevron-right"></i></span>
+                                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
+                                        <span class="folder-name">{{$currentCategory}}</span>
+                                        <span class="category-count">{{index $.CategoryCounts $currentCategory}}</span>
                                     </summary>
                                     <ul class="menu-list">
                             {{end}}
                             <li>
                                 <a href="/view/{{.Path}}" {{if eq .Path $activePath}}class="is-active"{{end}}>
                                     <span class="icon-text">
-                                        <span class="icon"><i class="fas fa-lightbulb icon-yellow-sharp"></i></span>
+                                        <span class="icon"><i class="fa-regular fa-file-lines"></i></span>
                                         <span>{{.Name}}</span>
                                     </span>
                                 </a>
@@ -78,47 +99,20 @@
                         <article class="content">
                             {{.Content}}
                         </article>
+                        <button id="btnScrollToTop" title="Go to top">Top</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <script>
-        // Persist category open/close state
-        document.addEventListener('DOMContentLoaded', function() {
-            const folders = document.querySelectorAll('details.category-folder');
-            
-            // Restore state from localStorage
-            folders.forEach(folder => {
-                const summary = folder.querySelector('.folder-name');
-                const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
-                const savedState = localStorage.getItem('category-' + categoryName);
-                
-                if (savedState === 'open') {
-                    folder.setAttribute('open', '');
-                }
-            });
-            
-            // Save state on toggle
-            folders.forEach(folder => {
-                folder.addEventListener('toggle', function() {
-                    const summary = folder.querySelector('.folder-name');
-                    const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
-                    
-                    if (folder.open) {
-                        localStorage.setItem('category-' + categoryName, 'open');
-                    } else {
-                        localStorage.removeItem('category-' + categoryName);
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="/static/js/sidebar.js"></script>
+    <script src="/static/js/scroll-to-top.js"></script>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/es/highlight.min.js';
+
         mermaid.initialize({ startOnLoad: true });
+        hljs.highlightAll();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
 </body>
 </html>

@@ -9,6 +9,7 @@
     --sidebar-active: #eff6ff;
     --sidebar-text-active: #19b596;
     --border-color: #e2e8f0;
+    --fa-primary-color: rgb(99, 230, 190)
 }
 
 body {
@@ -16,6 +17,28 @@ body {
     color: var(--text-main);
     font-family: 'Roboto', sans-serif;
     line-height: 1.6;
+}
+
+.hero-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.navbar-search {
+    margin-left: auto;
+    width: min(100%, 28rem);
+}
+
+.navbar-search-field {
+    justify-content: flex-end;
+    margin-bottom: 0 !important;
+}
+
+.navbar-search-field .control.is-expanded {
+    min-width: 14rem;
 }
 
 /* Remove default Bulma menu borders */
@@ -94,7 +117,7 @@ details.category-folder {
 details.category-folder .menu-list {
     margin-top: 0.25rem;
     margin-bottom: 1rem;
-    padding-left: 1.5rem;
+    padding-left: 0.5rem;
 }
 
 .category-icon {
@@ -113,12 +136,25 @@ details.category-folder[open] .category-icon i {
 
 .menu-list a {
     color: var(--text-main);
-    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 6px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid transparent;
     display: flex;
     align-items: center;
+}
+
+/* File icon: muted by default, brightens on hover/active */
+.menu-list a .icon i {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
+}
+
+.menu-list a:hover .icon i,
+.menu-list a.is-active .icon i {
+    color: var(--sidebar-text-active);
 }
 
 .menu-list a .icon-text {
@@ -134,6 +170,8 @@ details.category-folder[open] .category-icon i {
 }
 
 .menu-list a .icon-text > span:not(.icon) {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -148,7 +186,7 @@ details.category-folder[open] .category-icon i {
 .menu-list a.is-active {
     background-color: var(--sidebar-active) !important;
     color: var(--sidebar-text-active) !important;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .hero.is-primary {
@@ -184,8 +222,37 @@ details.category-folder[open] .category-icon i {
     letter-spacing: 0.05em;
 }
 
+/* Keep markdown-rendered tables inside the content box.
+   goldmark emits a bare <table>, so make it scroll horizontally
+   instead of overflowing the layout on wide/narrow content. */
+.content {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-collapse: collapse;
+}
+
+.content table th,
+.content table td {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
 .table td {
     vertical-align: middle;
+}
+
+.search-preview {
+    color: var(--text-muted);
+    max-width: 32rem;
+    white-space: normal;
 }
 
 code {
@@ -247,24 +314,53 @@ pre code {
     color: inherit;
 }
 
-/* Folder toggle styling */
-.folder-toggle {
-    color: #de1f52;
-    font-size: 1.2rem;
-    font-weight: bold;
+/* Folder header (category) styling */
+.folder-chevron {
+    color: var(--text-muted);
+    font-size: 0.65rem;
     line-height: 1;
     flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+details.category-folder[open] .folder-chevron {
+    transform: rotate(90deg);
+}
+
+.folder-icon {
+    color: #f59e0b;
+    font-size: 0.9rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+details.category-folder[open] .folder-icon {
+    color: #d97706;
 }
 
 .folder-name {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .category-count {
     color: var(--text-muted);
-    font-size: 0.7rem;
-    font-weight: normal;
-    margin-left: 0.25rem;
+    background-color: #f1f5f9;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+details.category-folder[open] .category-count {
+    color: var(--sidebar-text-active);
+    background-color: var(--sidebar-active);
 }
 
 /* Mermaid */
@@ -276,4 +372,38 @@ pre code {
     margin: 1.5rem 0;
     padding: 1rem;
     border-radius: 8px;
+}
+
+/* Go to Top button */
+#btnScrollToTop {
+  display: none; /* Hidden by default */
+  position: fixed; /* Fixed position relative to viewport */
+  bottom: 20px; 
+  right: 30px; 
+  z-index: 99; /* Ensure it stays on top of other content */
+  border: none; 
+  outline: none; 
+  background-color: #333; 
+  color: white; 
+  cursor: pointer; 
+  padding: 15px; 
+  border-radius: 10px; 
+}
+
+#btnScrollToTop:hover {
+  background-color: #555; /* Darken on hover */
+}
+
+@media screen and (max-width: 768px) {
+    .navbar-search {
+        width: 100%;
+    }
+
+    .navbar-search-field {
+        justify-content: stretch;
+    }
+
+    .navbar-search-field .control.is-expanded {
+        min-width: 0;
+    }
 }

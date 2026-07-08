@@ -12,12 +12,31 @@
     <section class="hero is-primary is-small">
         <div class="hero-body">
             <div class="container">
-                <h1 class="title">
-                    <span class="icon-text">
-                        <span class="icon"><i class="fa-solid fa-bullseye" style="color: #de1f52;"></i></span>
-                        <span> Mark Note</span>
-                    </span>
-                </h1>
+                <div class="hero-bar">
+                    <h1 class="title">
+                        <span class="icon-text">
+                            <span class="icon"><i class="fa-solid fa-bullseye" style="color: #de1f52;"></i></span>
+                            <span> GoMark</span>
+                        </span>
+                    </h1>
+                    <form action="/" method="get" class="navbar-search">
+                        <div class="field has-addons navbar-search-field">
+                            <div class="control has-icons-left is-expanded">
+                                <input
+                                    class="input"
+                                    type="search"
+                                    name="q"
+                                    value="{{.SearchQuery}}"
+                                    placeholder="Search all files"
+                                >
+                                <span class="icon is-small is-left"><i class="fas fa-search"></i></span>
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-light">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
@@ -34,14 +53,16 @@
                                 {{$currentCategory = .Category}}
                                 <details class="category-folder">
                                     <summary class="menu-label">
-                                        <span class="folder-toggle">+</span>
-                                        <span class="folder-name">{{$currentCategory}} <span class="category-count">({{index $.CategoryCounts $currentCategory}})</span></span>
+                                        <span class="folder-chevron"><i class="fas fa-chevron-right"></i></span>
+                                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
+                                        <span class="folder-name">{{$currentCategory}}</span>
+                                        <span class="category-count">{{index $.CategoryCounts $currentCategory}}</span>
                                     </summary>
                                     <ul class="menu-list">
                             {{end}}
                             <li><a href="/view/{{.Path}}">
                                 <span class="icon-text">
-                                    <span class="icon"><i class="fas fa-lightbulb icon-yellow-sharp"></i></span>
+                                    <span class="icon"><i class="fa-regular fa-file-lines"></i></span>
                                     <span>{{.Name}}</span>
                                 </span>
                             </a></li>
@@ -56,77 +77,92 @@
                             <div class="level-left">
                                 <div class="level-item">
                                     <h2 class="subtitle is-5">
-                                        <strong>{{len .Files}}</strong> Documents found
+                                        {{if .SearchQuery}}
+                                            <strong>{{len .SearchResults}}</strong> results for <code>{{.SearchQuery}}</code>
+                                        {{else}}
+                                            <strong>{{len .Files}}</strong> Documents found
+                                        {{end}}
                                     </h2>
                                 </div>
                             </div>
                         </div>
-                        
-                        <table class="table is-fullwidth is-hoverable">
-                            <thead>
-                                <tr>
-                                    <th>Document</th>
-                                    <th>Category</th>
-                                    <th class="has-text-right">Path</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{range .Files}}
-                                <tr>
-                                    <td>
-                                        <a href="/view/{{.Path}}" class="has-text-weight-semibold">
-                                            {{.Name}}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        {{if ne .Category "General"}}
-                                            <span class="tag is-info is-light">{{.Category}}</span>
-                                        {{else}}
-                                            <span class="tag is-light">General</span>
+
+                        {{if .SearchQuery}}
+                            {{if .SearchResults}}
+                                <table class="table is-fullwidth is-hoverable">
+                                    <thead>
+                                        <tr>
+                                            <th>Document</th>
+                                            <th>Category</th>
+                                            <th>Preview</th>
+                                            <th class="has-text-right">Path</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .SearchResults}}
+                                        <tr>
+                                            <td>
+                                                <a href="/view/{{.File.Path}}" class="has-text-weight-semibold">
+                                                    {{.File.Name}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {{if ne .File.Category "General"}}
+                                                    <span class="tag is-info is-light">{{.File.Category}}</span>
+                                                {{else}}
+                                                    <span class="tag is-light">General</span>
+                                                {{end}}
+                                            </td>
+                                            <td class="search-preview">{{.Snippet}}</td>
+                                            <td class="has-text-right">
+                                                <code>{{.File.Path}}</code>
+                                            </td>
+                                        </tr>
                                         {{end}}
-                                    </td>
-                                    <td class="has-text-right">
-                                        <code>{{.Path}}</code>
-                                    </td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                        </table>
+                                    </tbody>
+                                </table>
+                            {{else}}
+                                <div class="notification is-light">
+                                    No files matched <code>{{.SearchQuery}}</code>.
+                                </div>
+                            {{end}}
+                        {{else}}
+                            <table class="table is-fullwidth is-hoverable">
+                                <thead>
+                                    <tr>
+                                        <th>Document</th>
+                                        <th>Category</th>
+                                        <th class="has-text-right">Path</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{range .Files}}
+                                    <tr>
+                                        <td>
+                                            <a href="/view/{{.Path}}" class="has-text-weight-semibold">
+                                                {{.Name}}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {{if ne .Category "General"}}
+                                                <span class="tag is-info is-light">{{.Category}}</span>
+                                            {{else}}
+                                                <span class="tag is-light">General</span>
+                                            {{end}}
+                                        </td>
+                                        <td class="has-text-right">
+                                            <code>{{.Path}}</code>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        {{end}}
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <script>
-        // Persist category open/close state
-        document.addEventListener('DOMContentLoaded', function() {
-            const folders = document.querySelectorAll('details.category-folder');
-            
-            // Restore state from localStorage
-            folders.forEach(folder => {
-                const summary = folder.querySelector('.folder-name');
-                const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
-                const savedState = localStorage.getItem('category-' + categoryName);
-                
-                if (savedState === 'open') {
-                    folder.setAttribute('open', '');
-                }
-            });
-            
-            // Save state on toggle
-            folders.forEach(folder => {
-                folder.addEventListener('toggle', function() {
-                    const summary = folder.querySelector('.folder-name');
-                    const categoryName = summary ? summary.textContent.trim().split('(')[0].trim() : '';
-                    
-                    if (folder.open) {
-                        localStorage.setItem('category-' + categoryName, 'open');
-                    } else {
-                        localStorage.removeItem('category-' + categoryName);
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="/static/js/sidebar.js"></script>
 </body>
 </html>
